@@ -1,0 +1,63 @@
+$container-max-widths: (
+        sm: 540px,
+        md: 720px,
+        lg: 960px,
+        xl: 1920px
+) !default;
+
+@import "./node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@import "./node_modules/bootstrap/scss/bootstrap";
+
+$bgColor: rgb(30, 25, 25);
+
+body {
+    min-height: 100%;
+    background-color: $bgColor;
+}
+
+div#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    div.main {
+        min-height: 50vh;
+    }
+}
+
+div.logo {
+    text-align: center;
+    padding: 32px 8px 32px 8px;
+    user-select: none;
+    span {
+        font-size: 2em;
+        color: #fffe;
+        font-family: 'Oswald', sans-serif;
+        cursor: pointer;
+    }
+}
+
+div.searchbar {
+    input {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #eee;
+        &::placeholder {
+            color: #ccc;
+        }
+        &:focus {
+            background-color: #rgba(255, 255, 255, 0.9);
+            &::placeholder {
+                color: #888;
+            }
+        }
+    }
+}
+
+.content {
+    .video {
+        background-color: #fffa; /////////////////////////////
+    }
+    .results {
+        background-color: #fff5; /////////////////////////////
+    }
+}
