@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { config } from './config.js';
 import $ from 'jquery';
@@ -42,11 +42,20 @@ const Searchbar = (props) => {
 
 const Content = (props) => {
 
+    const handleVideoClick = (info) => {
+        props.f_openVideo(info)
+        $('#video')[0].scrollIntoView();
+    }
+
     const Video = () => {
-        if(props.result) {
+        if(props.openedVideo) {
             return (
-                <div className="video col-12 col-lg-8">
-                    video here
+                <div id="video" className="video col-12 col-lg-8">
+                    <div className="embed-responsive embed-responsive-16by9">
+                        <iframe className="embed-responsive-item" src={`https://www.youtube.com/embed/${props.openedVideo.id.videoId}?autoplay=1`}/>
+                    </div>
+                    <div className="title" dangerouslySetInnerHTML={{__html: props.openedVideo.snippet.title}}/>
+                    <div className="uploader">{props.openedVideo.snippet.channelTitle}</div>
                 </div>
             );
         } else {
@@ -57,8 +66,12 @@ const Content = (props) => {
     const ResultsList = () => {
         if(props.result) {
             return (
-                <div className="results col-12 col-lg-4">
-                    <ListItem/>
+                <div className={'results col-12' + (props.openedVideo ? ' col-lg-4' : '')}>
+                    {
+                        props.result.items.map((item, index) =>
+                            <ListItem info={item} key={'listitem'+index}/>
+                        )
+                    }
                 </div>
             );
         } else {
@@ -66,9 +79,15 @@ const Content = (props) => {
         }
     }
 
-    const ListItem = () => {
+    const ListItem = (_props) => {
         return (
-            <div></div>
+            <div className="listitem" onClick={handleVideoClick.bind(this, _props.info)}>
+                <img className="thumbnail" src={_props.info.snippet.thumbnails.default.url} />
+                <div className="info">
+                    <div className="title" dangerouslySetInnerHTML={{__html: _props.info.snippet.title}} />
+                    <div className="uploader">{_props.info.snippet.channelTitle}</div>
+                </div>
+            </div>
         );
     }
 
@@ -93,11 +112,16 @@ class App extends React.Component {
     getInitialState = () => ({
         searchString: false,
         result: false,
-        loading: false
+        loading: false,
+        openedVideo: false
     })
 
     resetState = () => {
         this.setState(this.getInitialState());
+    }
+
+    componentDidMount() {
+        this.requestYoutubeResult('lofi'); /////////////////////////////////////////
     }
 
     requestYoutubeResult = (q) => {
@@ -109,7 +133,12 @@ class App extends React.Component {
                 .then((response) => (response.json()))
                 .then((data) => {
                     console.log(data); /////////////////////////////////
-                    this.setState({searchString: q, result: data, loading: false});
+                    if(data.error) {
+                        throw(data.error.message);
+                    } else {
+                        this.setState({searchString: q, result: data, loading: false, openedVideo: false});
+                        this.setState({openedVideo: data.items[0]}); ////////////////////////////////////
+                    }
                 })
                 .catch(err => {
                     console.log('YouTube API call error: ' + err);
@@ -124,7 +153,7 @@ class App extends React.Component {
                 <Logo f_resetState={this.resetState} />
                 <div className="main container">
                     <Searchbar f_requestYoutubeResult={this.requestYoutubeResult} />
-                    <Content result={this.state.result}/>
+                    <Content result={this.state.result} f_openVideo={(vidtoopen) => this.setState({openedVideo: vidtoopen})} openedVideo={this.state.openedVideo}/>
                 </div>
             </div>
         );

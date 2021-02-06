@@ -16931,6 +16931,7 @@ a.text-dark:hover, a.text-dark:focus {
 body {
   min-height: 100%;
   background-color: #1e1919;
+  color: rgba(250, 250, 250, 0.95);
 }
 
 div#app {
@@ -17009,10 +17010,62 @@ div.searchbar input:focus::placeholder {
 }
 
 .content .video {
-  background-color: #fffa;
+  padding: 4px;
+  padding-bottom: 8px;
+  height: 100%;
+  font-family: 'Abel', sans-serif;
+}
+
+.content .video .title {
+  margin: 4px;
+  color: white;
+  font-size: 1.4em;
+}
+
+.content .video .uploader {
+  margin: 4px;
+  color: #ddd;
+  font-size: 0.9em;
 }
 
 .content .results {
-  background-color: #fff5;
+  padding: 0;
+}
+
+.content .results .listitem {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin: 4px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.content .results .listitem:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.content .results .listitem .info {
+  font-family: 'Abel', sans-serif;
+  padding: 4px 8px;
+}
+
+.content .results .listitem .info .thumbnail {
+  margin: 4px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+
+.content .results .listitem .info .title {
+  font-size: 1em;
+  color: #eee;
+}
+
+.content .results .listitem .info .uploader {
+  font-size: 0.8em;
+  color: #ddd;
 }
 /*# sourceMappingURL=index.css.map */
