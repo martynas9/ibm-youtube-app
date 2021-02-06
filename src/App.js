@@ -25,7 +25,7 @@ const Searchbar = (props) => {
 
     const handleSearchKeyPress = (e) => {
         if(e.charCode == 13) {
-            props.f_requestYoutubeResult(text);
+            props.f_requestResult(text);
         }
     }
 
@@ -33,7 +33,7 @@ const Searchbar = (props) => {
         <div className="searchbar input-group mb-3" >
             <input className="form-control" type="text" value={text} onChange={handleTextChange} onKeyPress={handleSearchKeyPress} placeholder="Search for a video..." />
             <div className="input-group-append">
-                <button onClick={props.f_requestYoutubeResult.bind(this, text)} className="btn btn-outline-light" type="button" id="button-addon2"><i className="fas fa-search" /></button>
+                <button onClick={props.f_requestResult.bind(this, text)} className="btn btn-outline-light" type="button" id="button-addon2"><i className="fas fa-search" /></button>
             </div>
         </div>
     )
@@ -113,6 +113,7 @@ class App extends React.Component {
         searchString: false,
         result: false,
         loading: false,
+        allowLoading: true,
         openedVideo: false
     })
 
@@ -121,13 +122,33 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        this.requestYoutubeResult('lofi'); /////////////////////////////////////////
+        this.requestResult('lofi'); /////////////////////////////////////////
+        window.addEventListener('scroll', this.checkIfScrolledDown);
     }
 
-    requestYoutubeResult = (q) => {
+    checkIfScrolledDown = () => {
+        if($(window).scrollTop() + $(window).height() >= $(document).height()){
+            if(this.state.allowLoading) {
+                this.setState({allowLoading: false});
+                setTimeout(() => {
+                    this.setState({allowLoading: true});
+                    this.checkIfScrolledDown();
+                }, 1000);
+                this.requestMoreResults();
+            }
+        }
+    }
+
+    requestResult = (q) => {
         if(!this.state.loading) {
             if(q != '') {
-                const callurl = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&maxResults=20&key=${config.GOOGLE_KEY}`;
+                let npt = false;
+                if(this.state.searchString === q && this.state.result.nextPageToken) {
+                    npt = this.state.result.nextPageToken
+                } else {
+                    this.resetState();
+                }
+                const callurl = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&maxResults=20&key=${config.GOOGLE_KEY}`+(npt ? '&pageToken='+npt : '');
                 this.setState({loading: true});
                 fetch(callurl)
                 .then((response) => (response.json()))
@@ -136,8 +157,10 @@ class App extends React.Component {
                     if(data.error) {
                         throw(data.error.message);
                     } else {
-                        this.setState({searchString: q, result: data, loading: false, openedVideo: false});
-                        this.setState({openedVideo: data.items[0]}); ////////////////////////////////////
+                        const newData = {...data};
+                        newData.items = (this.state.result.items ? this.state.result.items.concat(data.items) : newData.items);
+                        this.setState({searchString: q, result: newData, loading: false, openedVideo: false});
+                        this.setState({openedVideo: newData.items[0]}); ////////////////////////////////////
                     }
                 })
                 .catch(err => {
@@ -147,12 +170,20 @@ class App extends React.Component {
         }
     }
 
+    requestMoreResults = () => {
+        if(this.state.searchString && this.state.result.items && this.state.result.pageInfo.totalResults) {
+            if(this.state.result.items.length < this.state.result.pageInfo.totalResults) {
+                this.requestResult(this.state.searchString);
+            }
+        }
+    }
+
     render() {
         return (
             <div id="app">
                 <Logo f_resetState={this.resetState} />
                 <div className="main container">
-                    <Searchbar f_requestYoutubeResult={this.requestYoutubeResult} />
+                    <Searchbar f_requestResult={this.requestResult} />
                     <Content result={this.state.result} f_openVideo={(vidtoopen) => this.setState({openedVideo: vidtoopen})} openedVideo={this.state.openedVideo}/>
                 </div>
             </div>
