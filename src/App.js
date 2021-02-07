@@ -28,7 +28,7 @@ const Searchbar = (props) => {
             clearTimeout(errorTimeout);
             setErrorTimeout(false);
             setErrorMessage('');
-            console.log('clearing error');
+            //console.log('clearing error');
         }
     }
 
