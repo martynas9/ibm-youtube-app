@@ -17009,6 +17009,11 @@ div.searchbar input:focus::placeholder {
   color: #888;
 }
 
+div.searchbar .error {
+  margin: 2px;
+  color: #d44;
+}
+
 .content .video {
   padding: 4px;
   padding-bottom: 8px;

@@ -14,12 +14,34 @@ const Logo = (props) => {
 const Searchbar = (props) => {
 
     const [text, setText] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [errorTimeout, setErrorTimeout] = useState(false);
+
+    const showError = (errorText, timeout) => {
+        clearError();
+        setErrorMessage(errorText);
+        setErrorTimeout(setTimeout(() => setErrorMessage(''), timeout));
+    }
+
+    const clearError = () => {
+        if(errorTimeout && errorMessage) {
+            clearTimeout(errorTimeout);
+            setErrorTimeout(false);
+            setErrorMessage('');
+            console.log('clearing error');
+        }
+    }
 
     const handleTextChange = (e) => {
         const re = new RegExp("^[a-zA-Z0-9 ]+$");
-        const cutText = (e.target.value.length >= 20 ? e.target.value.substring(0, 19) : e.target.value);
+        const cutText = (e.target.value.length > 20 ? e.target.value.substring(0, 20) : e.target.value);
         if(cutText == '' || re.test(cutText)) {
             setText(cutText);
+            if(cutText.length < e.target.value.length) {
+                showError('Maximum search keyword length is 20 characters!', 3000);
+            }
+        } else {
+            showError('Invalid character!', 2000);
         }
     }
 
@@ -30,11 +52,14 @@ const Searchbar = (props) => {
     }
 
     return (
-        <div className="searchbar input-group mb-3" >
-            <input className="form-control" type="text" value={text} onChange={handleTextChange} onKeyPress={handleSearchKeyPress} placeholder="Search for a video..." />
-            <div className="input-group-append">
-                <button onClick={props.f_requestResult.bind(this, text)} className="btn btn-outline-light" type="button" id="button-addon2"><i className="fas fa-search" /></button>
+        <div className="searchbar mb-3">
+            <div className="input-group" >
+                <input className="form-control" type="text" value={text} onChange={handleTextChange} onKeyPress={handleSearchKeyPress} placeholder="Search for a video..." />
+                <div className="input-group-append">
+                    <button onClick={props.f_requestResult.bind(this, text)} className="btn btn-outline-light" type="button" id="button-addon2"><i className="fas fa-search" /></button>
+                </div>
             </div>
+            <div className="error ml-1">{errorMessage}</div>
         </div>
     )
 }
@@ -50,7 +75,7 @@ const Content = (props) => {
     const Video = () => {
         if(props.openedVideo) {
             return (
-                <div id="video" className="video col-12 col-lg-8">
+                <div id="video" className="video col-12 col-xl-8">
                     <div className="embed-responsive embed-responsive-16by9">
                         <iframe className="embed-responsive-item" src={`https://www.youtube.com/embed/${props.openedVideo.id.videoId}?autoplay=1`}/>
                     </div>
@@ -66,7 +91,7 @@ const Content = (props) => {
     const ResultsList = () => {
         if(props.result) {
             return (
-                <div className={'results col-12' + (props.openedVideo ? ' col-lg-4' : '')}>
+                <div className={'results col-12' + (props.openedVideo ? ' col-xl-4' : '')}>
                     {
                         props.result.items.map((item, index) =>
                             <ListItem info={item} key={'listitem'+index}/>
@@ -122,7 +147,7 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        this.requestResult('lofi'); /////////////////////////////////////////
+        //this.requestResult('lofi'); /////////////////////////////////////////
         window.addEventListener('scroll', this.checkIfScrolledDown);
     }
 
@@ -159,8 +184,8 @@ class App extends React.Component {
                     } else {
                         const newData = {...data};
                         newData.items = (this.state.result.items ? this.state.result.items.concat(data.items) : newData.items);
-                        this.setState({searchString: q, result: newData, loading: false, openedVideo: false});
-                        this.setState({openedVideo: newData.items[0]}); ////////////////////////////////////
+                        this.setState({searchString: q, result: newData, loading: false});
+                        //this.setState({openedVideo: newData.items[0]}); ////////////////////////////////////
                     }
                 })
                 .catch(err => {
