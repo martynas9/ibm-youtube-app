@@ -56,7 +56,7 @@ const Searchbar = (props) => {
             <div className="input-group" >
                 <input className="form-control" type="text" value={text} onChange={handleTextChange} onKeyPress={handleSearchKeyPress} placeholder="Search for a video..." />
                 <div className="input-group-append">
-                    <button onClick={props.f_requestResult.bind(this, text)} className="btn btn-outline-light" type="button" id="button-addon2"><i className="fas fa-search" /></button>
+                    <button onClick={props.f_requestResult.bind(this, text)} className="btn btn-outline-light" type="button"><i className="fas fa-search" /></button>
                 </div>
             </div>
             <div className="error ml-1">{errorMessage}</div>
@@ -68,7 +68,7 @@ const Searchbar = (props) => {
 const Content = (props) => {
 
     const handleVideoClick = (info) => {
-        props.f_openVideo(info)
+        props.f_watchVideo(info)
         $('#video')[0].scrollIntoView();
     }
 
@@ -84,7 +84,7 @@ const Content = (props) => {
                 </div>
             );
         } else {
-            return ('');
+            return (<div id="video" style={{display: 'none'}}></div>);
         }
     }
 
@@ -146,9 +146,21 @@ class App extends React.Component {
         this.setState(this.getInitialState());
     }
 
+    logAction = (action, data) => {
+        $.post('http://localhost:3000/logaction/', {action: action, data: (data ? data : {})}, (receivedData, receivedStatus) => {
+            console.log(`Logging API: ${receivedData} (${receivedStatus})`); //////////////////////
+        });
+    }
+
     componentDidMount() {
         //this.requestResult('lofi'); /////////////////////////////////////////
         window.addEventListener('scroll', this.checkIfScrolledDown);
+        this.logAction('test'); /////////////////////////
+    }
+
+    watchVideo = (vidtoopen) => {
+        this.setState({openedVideo: vidtoopen});
+        this.logAction('watch', vidtoopen); /////////////////////////
     }
 
     checkIfScrolledDown = () => {
@@ -178,13 +190,14 @@ class App extends React.Component {
                 fetch(callurl)
                 .then((response) => (response.json()))
                 .then((data) => {
-                    console.log(data); /////////////////////////////////
+                    //console.log(data); /////////////////////////////////
                     if(data.error) {
                         throw(data.error.message);
                     } else {
                         const newData = {...data};
                         newData.items = (this.state.result.items ? this.state.result.items.concat(data.items) : newData.items);
                         this.setState({searchString: q, result: newData, loading: false});
+                        this.logAction('search', q);
                         //this.setState({openedVideo: newData.items[0]}); ////////////////////////////////////
                     }
                 })
@@ -209,7 +222,7 @@ class App extends React.Component {
                 <Logo f_resetState={this.resetState} />
                 <div className="main container">
                     <Searchbar f_requestResult={this.requestResult} />
-                    <Content result={this.state.result} f_openVideo={(vidtoopen) => this.setState({openedVideo: vidtoopen})} openedVideo={this.state.openedVideo}/>
+                    <Content result={this.state.result} f_watchVideo={this.watchVideo} openedVideo={this.state.openedVideo}/>
                 </div>
             </div>
         );

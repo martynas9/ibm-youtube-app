@@ -1,9 +1,12 @@
+#CLIENT
 # dependencies
-node_modules
-
+client/node_modules
 # production
-/dist
-/.cache
-
+client/dist
+client/.cache
 #other
-src/config.js
+client/src/config.js
+
+#API
+# dependencies
+api/node_modules
